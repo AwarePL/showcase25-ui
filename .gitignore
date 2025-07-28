@@ -67,7 +67,7 @@ web_modules/
 
 # dotenv environment variable files
 .env
-.env.*
+*.env.*
 !.env.example
 
 # parcel-bundler cache (https://parceljs.org/)
@@ -133,7 +133,14 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+yarn.lock
 
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Cypress
+screenshots
+videos
+downloads
+reports

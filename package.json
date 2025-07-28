@@ -1,0 +1,25 @@
+{
+  "name": "showcase25-ui",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+  "lint": "eslint . --ext .js,.cypress.js",
+  "format": "prettier --write **/*.{js,cypress.js}",
+  "cypress:dev": "node cypressRunner.js --env dev",
+  "cypress:staging": "node cypressRunner.js --env staging",
+  "cypress:prod": "node cypressRunner.js --env prod",
+  "cypress:open": "node cypressRunner.js --open --env dev"
+  },
+  "repository": "https://github.com/AwarePL/showcase25-ui.git",
+  "author": "AwarePL <lukasz@korchowiec.pl>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^9.32.0",
+    "eslint-plugin-cypress": "^5.1.0",
+    "prettier": "^3.6.2"
+  },
+  "dependencies": {
+    "cypress": "^14.5.3"
+  }
+}
