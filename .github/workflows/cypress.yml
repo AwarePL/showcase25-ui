@@ -17,11 +17,13 @@ jobs:
 
       - name: Create cypress.env.js from secret
         run: |
-          echo "${{ secrets.ENV_FILE }}" > cypress.env.js
-
+          echo "${{ secrets.ENV }}" > ./cypress.env.js
+      - name: Install project
+        run: |
+          npm install
       - name: Cypress run
         run: |
-          yarn cypress:dev
+          node cypressRunner.js --env dev
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
