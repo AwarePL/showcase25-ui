@@ -1,21 +1,24 @@
 export class LoginPage {
   constructor() {
-    this.usernameInput = '#username'
+    this.emailInput = '#email'
     this.passwordInput = '#password'
-    this.loginButton = 'button[type="submit"]'
+    this.loginButton = '#loginButton'
+    this.registerLink = 'a.primary-link[routerlink="/register"]'
     this.errorMessage = '#loginError'
   }
 
   visit() {
-    cy.visit('/') // Adjust based on your app's login URL
+    cy.visit('/#/login') // Adjust based on your app's login URL
   }
 
-  login(username, password) {
-    cy.get(this.usernameInput).type(username)
-    cy.get(this.passwordInput).type(password)
-    cy.get(this.loginButton).click()
+login(username, password) {
+  cy.get(this.emailInput).type(username)
+  cy.get(this.passwordInput).type(password)
+  return cy.get(this.loginButton).click()
+}
+  startRegistrationViaEmail() {
+    cy.get(this.registerLink).click()
   }
-
   getErrorMessage() {
     return cy.get(this.errorMessage)
   }
