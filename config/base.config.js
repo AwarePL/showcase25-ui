@@ -37,6 +37,9 @@ export default (_env) => {
       // ✅ Set number of tests per worker for parallel execution
       numTestsPerWorker: 100,
 
+      // ✅ Set default pattern for test files
+      specPattern: '**/*.cy.js',
+
       // ✅ Enable support for custom commands and plugins
       setupNodeEvents(on, config) {
         return config
