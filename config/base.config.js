@@ -2,13 +2,15 @@ import { defineConfig } from 'cypress'
 
 export default (_env) => {
   return defineConfig({
+    projectId: _env.projectId,
     e2e: {
       baseUrl: _env.baseUrl,
       env: {
         apiUrl: _env.apiUrl,
       },
+
       // ✅ Set default viewport size for consistent testing
-      viewportWidth: 1980,
+      viewportWidth: 1920,
       viewportHeight: 1080,
 
       // ✅ Enable retries for failed tests (helps with transient issues)
@@ -39,8 +41,6 @@ export default (_env) => {
 
       // ✅ Set default pattern for test files
       specPattern: '**/*.cy.js',
-
-      // ✅ Enable support for custom commands and plugins
       setupNodeEvents(on, config) {
         return config
       },

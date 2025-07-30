@@ -1,11 +1,12 @@
+/* eslint-disable no-console */
 /* eslint-disable no-magic-numbers */
-import { run, open } from 'cypress' // <-- Import 'open' function
+import { run, open } from 'cypress'
 import fs from 'fs'
 import path from 'path'
 import { env } from './cypress.env.js'
 import generateConfig from './config/base.config.js'
+import { exec } from 'child_process'
 
-// Parse command line arguments
 const args = process.argv.slice(2)
 const params = {}
 
@@ -33,8 +34,14 @@ if (!env[envName]) {
   throw new Error(`Environment "${envName}" is not defined in cypress.env.js.`)
 }
 
+// Combine environment-specific config with the top-level projectId
+const envConfig = {
+  ...env[envName],
+  projectId: env.projectId,
+}
+
 // Generate the config object
-const config = generateConfig(env[envName])
+const config = generateConfig(envConfig)
 
 // Resolve the current directory using process.cwd()
 const dir = process.cwd()
@@ -46,12 +53,28 @@ fs.writeFileSync(
   `export default ${JSON.stringify(config, null, 2)}`,
 )
 
+// Add --record flag if in CI
+if (process.env.CI === 'true') {
+  args.push('--record')
+  args.push(`--key=${process.env.CYPRESS_RECORD_KEY}`)
+}
+
 // Run or open Cypress based on the --open flag
 const runParams = { ...params }
-delete runParams.env // Remove 'env' as it's not a valid parameter for 'run' or 'open'
+delete runParams.env
 
 if (params.open) {
-  open(config, runParams)
+  const command = `npx cypress open ${args.join(' ')}`
+  console.log(`Running: ${command}`)
+  exec(command, (error, stdout, stderr) => {
+    console.log(stdout)
+    console.error(stderr)
+  })
 } else {
-  run(config, runParams)
+  const command = `npx cypress run ${args.join(' ')}`
+  console.log(`Running: ${command}`)
+  exec(command, (error, stdout, stderr) => {
+    console.log(stdout)
+    console.error(stderr)
+  })
 }

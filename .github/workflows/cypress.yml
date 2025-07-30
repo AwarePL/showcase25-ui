@@ -1,29 +1,58 @@
 name: Cypress Tests
+
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to run tests on'
+        required: false
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
 
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        containers: [1, 2] # Uses 2 parallel instances
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js with Yarn cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' 
+          cache: 'yarn'
+
       - name: Create cypress.env.js from secret
         run: |
           echo "${{ secrets.ENV }}" > ./cypress.env.js
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ hashFiles('yarn.lock') }}
+
       - name: Install project
         run: |
-          npm install
-      - name: Cypress run
+          yarn install --frozen-lockfile --no-fund
+
+      - name: Run Cypress
         run: |
-          node cypressRunner.js --env dev
+          if [ "${{ inputs.environment }}" = "dev" ]; then
+            node cypressRunner.js
+          elif [ "${{ inputs.environment }}" = "staging" ]; then
+            node cypressRunner.js
+          elif [ "${{ inputs.environment }}" = "prod" ]; then
+            node cypressRunner.js
+          fi
         env:
-          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CI: "true"

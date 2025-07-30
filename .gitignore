@@ -133,7 +133,6 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-yarn.lock
 
 # Vite logs files
 vite.config.js.timestamp-*
@@ -145,3 +144,4 @@ videos
 downloads
 reports
 cypress.config.js
+cypress/fixtures/generated/
