@@ -13,7 +13,7 @@ export class RegistrationPage {
     cy.visit('/register')
   }
 
- fillEmail(email) {
+  fillEmail(email) {
     return cy.get(this.emailInput).type(email)
   }
 
@@ -26,7 +26,8 @@ export class RegistrationPage {
   }
 
   selectSecurityQuestion(option) {
-    return cy.get(this.securityQuestionSelect)
+    return cy
+      .get(this.securityQuestionSelect)
       .click()
       .then(() => {
         cy.get(this.securityQuestionSelectOption)

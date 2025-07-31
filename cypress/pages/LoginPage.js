@@ -11,11 +11,11 @@ export class LoginPage {
     cy.visit('/#/login') // Adjust based on your app's login URL
   }
 
-login(username, password) {
-  cy.get(this.emailInput).type(username)
-  cy.get(this.passwordInput).type(password)
-  return cy.get(this.loginButton).click()
-}
+  login(username, password) {
+    cy.get(this.emailInput).type(username)
+    cy.get(this.passwordInput).type(password)
+    return cy.get(this.loginButton).click()
+  }
   startRegistrationViaEmail() {
     cy.get(this.registerLink).click()
   }

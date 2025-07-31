@@ -16,7 +16,8 @@ export class UserActions {
   static register() {
     return cy.generateUserDetailsFixture().then((user) => {
       const registerPage = new RegistrationPage()
-      return registerPage.fillEmail(user.email)
+      return registerPage
+        .fillEmail(user.email)
         .then(() => registerPage.fillPassword(user.password))
         .then(() => registerPage.fillRepeatPassword(user.password))
         .then(() => registerPage.selectSecurityQuestion())
