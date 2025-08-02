@@ -26,75 +26,7 @@ env:
   CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
 jobs:
-  cypress-run:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22]
-        container: [1, 2]
-      fail-fast: false
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
-
-      - name: Create cypress.env.js from secret
-        run: |
-          echo "${{ secrets.ENV }}" > ./cypress.env.js
-
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            node-modules-
-
-      - name: Install project
-        run: |
-          yarn install --frozen-lockfile --no-fund
-
-      - name: Run Cypress - Individual Test Files
-        run: |
-          # Get list of test files and run each one separately
-          TEST_FILES=$(find ./cypress/tests -name "*.cy.js" -type f)
-          echo "Found ${TEST_FILES} test files"
-          
-          for file in $TEST_FILES; do
-            echo "Running test file: $file"
-            if [ "${{ inputs.environment }}" = "dev" ]; then
-              node cypressRunner.js --spec "$file"
-            elif [ "${{ inputs.environment }}" = "staging" ]; then
-              node cypressRunner.js --spec "$file"
-            elif [ "${{ inputs.environment }}" = "prod" ]; then
-              node cypressRunner.js --spec "$file"
-            fi
-          done
-
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: cypress-screenshots
-          path: cypress/screenshots
-          retention-days: 1
-
-      - name: Upload videos
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: cypress-videos
-          path: cypress/videos
-          retention-days: 1
-
   cypress-parallel:
-    needs: cypress-run
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -122,35 +54,63 @@ jobs:
           path: node_modules
           key: node-modules-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            node-modules-
+            node-modules
 
       - name: Install project
         run: |
           yarn install --frozen-lockfile --no-fund
 
-      - name: Run Cypress in parallel mode using Cypress built-in parallelization
+      - name: Run Cypress in parallel mode with container distribution
         run: |
           echo "Running tests in parallel mode"
-          if [ "${{ inputs.environment }}" = "dev" ]; then
-            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
-          elif [ "${{ inputs.environment }}" = "staging" ]; then
-            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
-          elif [ "${{ inputs.environment }}" = "prod" ]; then
-            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
+          
+          # Get list of all test files
+          TEST_FILES=$(find ./cypress/tests -name "*.cy.js" -type f)
+          TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
+          
+          echo "Found $TEST_COUNT test files"
+          
+          # Calculate which tests this container should run
+          CONTAINER_ID=${{ matrix.container }}
+          TOTAL_CONTAINERS=2
+          
+          # Distribute tests across containers
+          TEST_INDEX=0
+          RUN_TESTS=false
+          for file in $TEST_FILES; do
+            if [ $((TEST_INDEX % TOTAL_CONTAINERS)) -eq $((CONTAINER_ID - 1)) ]; then
+              echo "Container $CONTAINER_ID running test: $file"
+              RUN_TESTS=true
+              if [ "${{ inputs.environment }}" = "dev" ]; then
+                node cypressRunner.js --spec "$file"
+              elif [ "${{ inputs.environment }}" = "staging" ]; then
+                node cypressRunner.js --spec "$file"
+              elif [ "${{ inputs.environment }}" = "prod" ]; then
+                node cypressRunner.js --spec "$file"
+              fi
+            fi
+            TEST_INDEX=$((TEST_INDEX + 1))
+          done
+
+          # Set flag to indicate if any tests were run
+          if [ "$RUN_TESTS" = "true" ]; then
+            echo "Tests were executed in this container"
+          else
+            echo "No tests executed in this container"
           fi
 
-      - name: Upload test results
+      - name: Upload screenshots if they exist
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && (hashFiles('cypress/screenshots') != '')
         with:
-          name: cypress-screenshots-parallel
+          name: cypress-screenshots-container-${{ matrix.container }}
           path: cypress/screenshots
           retention-days: 1
 
-      - name: Upload videos
+      - name: Upload videos if they exist
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && (hashFiles('cypress/videos') != '')
         with:
-          name: cypress-videos-parallel
+          name: cypress-videos-container-${{ matrix.container }}
           path: cypress/videos
           retention-days: 1
