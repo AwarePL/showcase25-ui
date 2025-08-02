@@ -60,12 +60,14 @@ jobs:
         run: |
           yarn install --frozen-lockfile --no-fund
 
+      - name: Install Cypress binary
+        run: |
+          npx cypress install
+
       - name: Run Cypress in parallel mode using built-in Cypress parallelization
         run: |
           echo "Running tests in parallel mode"
           
-          # For parallel execution, we'll use Cypress's built-in parallelization
-          # This approach bypasses the individual file execution and lets Cypress handle it
           if [ "${{ inputs.environment }}" = "dev" ]; then
             npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
           elif [ "${{ inputs.environment }}" = "staging" ]; then
