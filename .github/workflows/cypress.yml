@@ -54,7 +54,7 @@ jobs:
           path: node_modules
           key: node-modules-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            node-modules
+            node-modules-
 
       - name: Install project
         run: |
@@ -81,11 +81,14 @@ jobs:
             if [ $((TEST_INDEX % TOTAL_CONTAINERS)) -eq $((CONTAINER_ID - 1)) ]; then
               echo "Container $CONTAINER_ID running test: $file"
               RUN_TESTS=true
-              if [ "${{ inputs.environment }}" = "dev" ]; then
+              # Use the environment from workflow input
+              ENV_INPUT="${{ inputs.environment }}"
+              echo "Running test with environment: $ENV_INPUT"
+              if [ "$ENV_INPUT" = "dev" ]; then
                 node cypressRunner.js --spec "$file"
-              elif [ "${{ inputs.environment }}" = "staging" ]; then
+              elif [ "$ENV_INPUT" = "staging" ]; then
                 node cypressRunner.js --spec "$file"
-              elif [ "${{ inputs.environment }}" = "prod" ]; then
+              elif [ "$ENV_INPUT" = "prod" ]; then
                 node cypressRunner.js --spec "$file"
               fi
             fi
