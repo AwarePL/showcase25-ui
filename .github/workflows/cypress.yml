@@ -68,12 +68,14 @@ jobs:
         run: |
           echo "Running tests in parallel mode"
           
+          # Use the standard approach without --parallel flag to avoid GUI issues
+          # The parallelization will be handled by the matrix strategy
           if [ "${{ inputs.environment }}" = "dev" ]; then
-            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }} --config-file cypress.config.js
+            node cypressRunner.js
           elif [ "${{ inputs.environment }}" = "staging" ]; then
-            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }} --config-file cypress.config.js
+            node cypressRunner.js
           elif [ "${{ inputs.environment }}" = "prod" ]; then
-            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }} --config-file cypress.config.js
+            node cypressRunner.js
           fi
 
       - name: Upload screenshots if they exist
