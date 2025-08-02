@@ -64,18 +64,45 @@ jobs:
         run: |
           npx cypress install
 
-      - name: Run Cypress in parallel mode using built-in Cypress parallelization
+      - name: Run Cypress with test file distribution
         run: |
           echo "Running tests in parallel mode"
           
-          # Use the standard approach without --parallel flag to avoid GUI issues
-          # The parallelization will be handled by the matrix strategy
-          if [ "${{ inputs.environment }}" = "dev" ]; then
-            node cypressRunner.js
-          elif [ "${{ inputs.environment }}" = "staging" ]; then
-            node cypressRunner.js
-          elif [ "${{ inputs.environment }}" = "prod" ]; then
-            node cypressRunner.js
+          # Get list of all test files
+          TEST_FILES=$(find ./cypress/tests -name "*.cy.js" -type f)
+          TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
+          
+          echo "Found $TEST_COUNT test files"
+          
+          # Calculate which tests this container should run
+          CONTAINER_ID=${{ matrix.container }}
+          TOTAL_CONTAINERS=2
+          
+          # Distribute tests across containers
+          TEST_INDEX=0
+          RUN_TESTS=false
+          for file in $TEST_FILES; do
+            if [ $((TEST_INDEX % TOTAL_CONTAINERS)) -eq $((CONTAINER_ID - 1)) ]; then
+              echo "Container $CONTAINER_ID running test: $file"
+              RUN_TESTS=true
+              # Use the environment from workflow input
+              ENV_INPUT="${{ inputs.environment }}"
+              if [ "$ENV_INPUT" = "dev" ]; then
+                node cypressRunner.js --spec "$file"
+              elif [ "$ENV_INPUT" = "staging" ]; then
+                node cypressRunner.js --spec "$file"
+              elif [ "$ENV_INPUT" = "prod" ]; then
+                node cypressRunner.js --spec "$file"
+              fi
+            fi
+            TEST_INDEX=$((TEST_INDEX + 1))
+          done
+
+          # Set flag to indicate if any tests were run
+          if [ "$RUN_TESTS" = "true" ]; then
+            echo "Tests were executed in this container"
+          else
+            echo "No tests executed in this container"
           fi
 
       - name: Upload screenshots if they exist
