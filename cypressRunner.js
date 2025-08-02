@@ -1,6 +1,4 @@
 /* eslint-disable no-console */
-/* eslint-disable no-magic-numbers */
-import { run, open } from 'cypress'
 import fs from 'fs'
 import path from 'path'
 import { env } from './cypress.env.js'
@@ -34,7 +32,7 @@ if (!env[envName]) {
   throw new Error(`Environment "${envName}" is not defined in cypress.env.js.`)
 }
 
-// Combine environment-specific config with the top-level projectId
+// Copy env, projectId and googleAccount to config
 const envConfig = {
   ...env[envName],
   projectId: env.projectId,
@@ -53,27 +51,39 @@ fs.writeFileSync(
   `export default ${JSON.stringify(config, null, 2)}`,
 )
 
-// Add --record flag if in CI
-if (process.env.CI === 'true') {
-  args.push('--record')
-  args.push(`--key=${process.env.CYPRESS_RECORD_KEY}`)
+// Add --record flag if in CI and record key exists
+if (process.env.CI === 'true' && process.env.CYPRESS_RECORD_KEY) {
+  // Only add record flags if not already present
+  const hasRecord = args.includes('--record') || args.includes('-r')
+  if (!hasRecord) {
+    args.push('--record')
+    args.push(`--key=${process.env.CYPRESS_RECORD_KEY}`)
+  }
 }
 
 // Run or open Cypress based on the --open flag
-const runParams = { ...params }
-delete runParams.env
-
 if (params.open) {
-  const command = `npx cypress open ${args.join(' ')}`
+  // Remove --open from args before passing to cypress open
+  const filteredArgs = args.filter((arg) => arg !== '--open')
+  const command = `npx cypress open ${filteredArgs.join(' ')}`
   console.log(`Running: ${command}`)
   exec(command, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error: ${error}`)
+      process.exit(1)
+    }
     console.log(stdout)
     console.error(stderr)
   })
 } else {
+  // For run mode, pass all arguments including --spec to cypress run
   const command = `npx cypress run ${args.join(' ')}`
   console.log(`Running: ${command}`)
   exec(command, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error: ${error}`)
+      process.exit(1)
+    }
     console.log(stdout)
     console.error(stderr)
   })

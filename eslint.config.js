@@ -19,7 +19,7 @@ export default {
     'no-console': 'warn',
     'no-unused-expressions': 'error',
     'prefer-const': 'error',
-    'no-magic-numbers': ['error', { ignore: [0, 1] }],
+    'no-magic-numbers': ['error', { ignore: [0, 1, 2, 200, 401] }],
 
     // Style rules (aligned with Prettier)
     quotes: ['error', 'single'],

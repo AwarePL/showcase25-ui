@@ -1,6 +1,10 @@
 name: Cypress Tests
 
 on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       environment:
@@ -13,18 +17,31 @@ on:
           - staging
           - prod
 
+permissions:
+  contents: read
+
+env:
+  CI: "true"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22]
+        container: [1, 2]
+      fail-fast: false
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js with Yarn cache
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22' 
+          node-version: ${{ matrix.node-version }}
           cache: 'yarn'
 
       - name: Create cypress.env.js from secret
@@ -35,24 +52,105 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: ${{ hashFiles('yarn.lock') }}
+          key: node-modules-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ hashFiles('yarn.lock') }}
+            node-modules-
 
       - name: Install project
         run: |
           yarn install --frozen-lockfile --no-fund
 
-      - name: Run Cypress
+      - name: Run Cypress - Individual Test Files
         run: |
+          # Get list of test files and run each one separately
+          TEST_FILES=$(find ./cypress/tests -name "*.cy.js" -type f)
+          echo "Found ${TEST_FILES} test files"
+          
+          for file in $TEST_FILES; do
+            echo "Running test file: $file"
+            if [ "${{ inputs.environment }}" = "dev" ]; then
+              node cypressRunner.js --spec "$file"
+            elif [ "${{ inputs.environment }}" = "staging" ]; then
+              node cypressRunner.js --spec "$file"
+            elif [ "${{ inputs.environment }}" = "prod" ]; then
+              node cypressRunner.js --spec "$file"
+            fi
+          done
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          retention-days: 1
+
+      - name: Upload videos
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos
+          retention-days: 1
+
+  cypress-parallel:
+    needs: cypress-run
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22]
+        container: [1, 2]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+
+      - name: Create cypress.env.js from secret
+        run: |
+          echo "${{ secrets.ENV }}" > ./cypress.env.js
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            node-modules-
+
+      - name: Install project
+        run: |
+          yarn install --frozen-lockfile --no-fund
+
+      - name: Run Cypress in parallel mode using Cypress built-in parallelization
+        run: |
+          echo "Running tests in parallel mode"
           if [ "${{ inputs.environment }}" = "dev" ]; then
-            node cypressRunner.js
+            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
           elif [ "${{ inputs.environment }}" = "staging" ]; then
-            node cypressRunner.js
+            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
           elif [ "${{ inputs.environment }}" = "prod" ]; then
-            node cypressRunner.js
+            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-          CI: "true"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-screenshots-parallel
+          path: cypress/screenshots
+          retention-days: 1
+
+      - name: Upload videos
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-videos-parallel
+          path: cypress/videos
+          retention-days: 1

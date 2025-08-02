@@ -1,3 +1,5 @@
+//This is an example file to present how cypress.env.js file is structured, in order to use it in your project, you need to rename this file and fill it with your own data.
+
 export default {
   projectId: 'yourKey',
   dev: {
