@@ -60,46 +60,18 @@ jobs:
         run: |
           yarn install --frozen-lockfile --no-fund
 
-      - name: Run Cypress in parallel mode with container distribution
+      - name: Run Cypress in parallel mode using built-in Cypress parallelization
         run: |
           echo "Running tests in parallel mode"
           
-          # Get list of all test files
-          TEST_FILES=$(find ./cypress/tests -name "*.cy.js" -type f)
-          TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
-          
-          echo "Found $TEST_COUNT test files"
-          
-          # Calculate which tests this container should run
-          CONTAINER_ID=${{ matrix.container }}
-          TOTAL_CONTAINERS=2
-          
-          # Distribute tests across containers
-          TEST_INDEX=0
-          RUN_TESTS=false
-          for file in $TEST_FILES; do
-            if [ $((TEST_INDEX % TOTAL_CONTAINERS)) -eq $((CONTAINER_ID - 1)) ]; then
-              echo "Container $CONTAINER_ID running test: $file"
-              RUN_TESTS=true
-              # Use the environment from workflow input
-              ENV_INPUT="${{ inputs.environment }}"
-              echo "Running test with environment: $ENV_INPUT"
-              if [ "$ENV_INPUT" = "dev" ]; then
-                node cypressRunner.js --spec "$file"
-              elif [ "$ENV_INPUT" = "staging" ]; then
-                node cypressRunner.js --spec "$file"
-              elif [ "$ENV_INPUT" = "prod" ]; then
-                node cypressRunner.js --spec "$file"
-              fi
-            fi
-            TEST_INDEX=$((TEST_INDEX + 1))
-          done
-
-          # Set flag to indicate if any tests were run
-          if [ "$RUN_TESTS" = "true" ]; then
-            echo "Tests were executed in this container"
-          else
-            echo "No tests executed in this container"
+          # For parallel execution, we'll use Cypress's built-in parallelization
+          # This approach bypasses the individual file execution and lets Cypress handle it
+          if [ "${{ inputs.environment }}" = "dev" ]; then
+            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
+          elif [ "${{ inputs.environment }}" = "staging" ]; then
+            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
+          elif [ "${{ inputs.environment }}" = "prod" ]; then
+            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
           fi
 
       - name: Upload screenshots if they exist
