@@ -10,7 +10,7 @@ export class RegistrationPage {
   }
 
   visit() {
-    cy.visit('/register')
+    cy.visit('/#/register')
   }
 
   fillEmail(email) {
