@@ -69,11 +69,11 @@ jobs:
           echo "Running tests in parallel mode"
           
           if [ "${{ inputs.environment }}" = "dev" ]; then
-            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
+            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }} --config-file cypress.config.js
           elif [ "${{ inputs.environment }}" = "staging" ]; then
-            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
+            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }} --config-file cypress.config.js
           elif [ "${{ inputs.environment }}" = "prod" ]; then
-            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }}
+            npx cypress run --parallel --record true --key ${{ secrets.CYPRESS_RECORD_KEY }} --config-file cypress.config.js
           fi
 
       - name: Upload screenshots if they exist
