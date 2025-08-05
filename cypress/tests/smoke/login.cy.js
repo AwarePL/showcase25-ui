@@ -1,4 +1,5 @@
 import { LoginPage } from '../../pages/LoginPage'
+import { generateTestsForStaticElements } from '../../utils/checkStaticView'
 
 describe('Login Page Smoke Tests', () => {
   const loginPage = new LoginPage()
@@ -26,12 +27,7 @@ describe('Login Page Smoke Tests', () => {
       },
       { name: 'Register link', selector: loginPage.registerLink },
     ]
-
-    elementsToTest.forEach(({ name, selector }) => {
-      it(`Should display ${name} on Login page`, () => {
-        cy.get(selector).should('be.visible')
-      })
-    })
+    generateTestsForStaticElements(elementsToTest, 'Login page')
 
     it('Main heading should be Login', () => {
       cy.get('h1').should('contain.text', 'Login')
