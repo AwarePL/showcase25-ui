@@ -1,4 +1,4 @@
-import { UserActions } from '../steps/UserActions'
+import { UserActions } from '../../steps/UserActions.js'
 
 describe('E2E Tests for Juice Shop', () => {
   beforeEach(() => {
