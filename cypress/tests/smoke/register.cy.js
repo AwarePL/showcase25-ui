@@ -1,4 +1,7 @@
+/* eslint-disable no-magic-numbers */
 import { RegistrationPage } from '../../pages/RegistrationPage'
+import { generateTestsForStaticElements } from '../../utils/checkStaticView'
+import { handlePasswordInputHints } from '../../utils/checkPasswordInputHints'
 
 describe('Registration Page Smoke Tests', () => {
   const registerPage = new RegistrationPage()
@@ -9,10 +12,49 @@ describe('Registration Page Smoke Tests', () => {
   })
 
   context('Positive Tests', () => {
-    // toDo
-  })
+    const elementsToTest = [
+      { name: 'Email input field', selector: registerPage.emailInput },
+      { name: 'Password input field', selector: registerPage.passwordInput },
+      {
+        name: 'Repeat password input field',
+        selector: registerPage.repeatPasswordInput,
+      },
+      {
+        name: 'Select securinty question select',
+        selector: registerPage.securityQuestionSelect,
+      },
+      {
+        name: 'Securinty question answer input field',
+        selector: registerPage.securityAnswerInput,
+      },
 
-  context('Negative Tests', () => {
-    // toDo
+      { name: 'Register button', selector: registerPage.registerButton },
+      {
+        name: 'Already a customer? link',
+        selector: registerPage.alreadyACustomerLinkAcorn,
+      },
+    ]
+
+    const passwordLengths = [5, 10]
+    generateTestsForStaticElements(elementsToTest, 'Registration page')
+    it('Main heading should be Registration', () => {
+      cy.get('h1').should('contain.text', 'User Registration')
+    })
+
+    passwordLengths.forEach((length) => {
+      it(`Password hint should display ${length} characters`, () => {
+          handlePasswordInputHints(
+          length,
+          registerPage.passwordInput,
+          registerPage.passwordHint,
+        ).then((hintLength) => {
+          expect(length).to.equal(hintLength)
+        })
+      })
+    })
+
+    //   context('Negative Tests', () => {
+    //     // toDo
+    //   })
   })
 })

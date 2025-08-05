@@ -3,10 +3,14 @@ export class RegistrationPage {
     this.emailInput = '#emailControl'
     this.passwordInput = '#passwordControl'
     this.repeatPasswordInput = '#repeatPasswordControl'
+    this.passwordStreangtProgressBar = 'mat-progress-bar'
+    this.passwordStreangtInfoCard = 'app-password-strength-info'
+    this.passwordHint = 'mat-hint'
     this.securityQuestionSelect = 'mat-select[name="securityQuestion"]'
     this.securityQuestionSelectOption = 'mat-option[role="option"]'
     this.securityAnswerInput = '#securityAnswerControl'
     this.registerButton = '#registerButton'
+    this.alreadyACustomerLinkAcorn = '#alreadyACustomerLink'
   }
 
   visit() {
