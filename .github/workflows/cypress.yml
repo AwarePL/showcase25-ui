@@ -62,7 +62,7 @@ jobs:
 
       - name: Install Cypress binary
         run: |
-          npx cypress install
+          yarn add cypress
 
       - name: Run Cypress with test file distribution
         run: |
