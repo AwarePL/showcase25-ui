@@ -43,7 +43,7 @@ describe('Registration Page Smoke Tests', () => {
 
     passwordLengths.forEach((length) => {
       it(`Password hint should display ${length} characters`, () => {
-          handlePasswordInputHints(
+        handlePasswordInputHints(
           length,
           registerPage.passwordInput,
           registerPage.passwordHint,

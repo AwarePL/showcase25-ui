@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 /* eslint-disable no-console */
 import fs from 'fs'
 import path from 'path'
@@ -51,21 +52,34 @@ fs.writeFileSync(
   `export default ${JSON.stringify(config, null, 2)}`,
 )
 
+// ✅ POCZĄTEK ZMIAN: Filtrowanie argumentów
+// Kopiujemy oryginalne argumenty
+const cypressArgs = [...args]
+
+// Znajdujemy indeks flagi --env
+const envIndex = cypressArgs.findIndex((arg) => arg === '--env')
+
+// Jeśli flaga --env istnieje, usuwamy ją oraz jej wartość (następny element w tablicy)
+if (envIndex > -1) {
+  cypressArgs.splice(envIndex, 2)
+}
+// ✅ KONIEC ZMIAN: Filtrowanie argumentów
+
 // Add --record flag if in CI and record key exists
 if (process.env.CI === 'true' && process.env.CYPRESS_RECORD_KEY) {
   // Only add record flags if not already present
-  const hasRecord = args.includes('--record') || args.includes('-r')
+  const hasRecord =
+    cypressArgs.includes('--record') || cypressArgs.includes('-r')
   if (!hasRecord) {
-    args.push('--record')
-    args.push(`--key=${process.env.CYPRESS_RECORD_KEY}`)
+    cypressArgs.push('--record')
+    cypressArgs.push(`--key=${process.env.CYPRESS_RECORD_KEY}`)
   }
 }
 
 // Run or open Cypress based on the --open flag
 if (params.open) {
-  // Remove --open from args before passing to cypress open
-  const filteredArgs = args.filter((arg) => arg !== '--open')
-  const command = `npx cypress open ${filteredArgs.join(' ')}`
+  const openArgs = cypressArgs.filter((arg) => arg !== '--open')
+  const command = `npx cypress open ${openArgs.join(' ')}`
   console.log(`Running: ${command}`)
   exec(command, (error, stdout, stderr) => {
     if (error) {
@@ -77,7 +91,7 @@ if (params.open) {
   })
 } else {
   // For run mode, use the Cypress binary directly instead of yarn
-  const command = `npx cypress run ${args.join(' ')}`
+  const command = `npx cypress run ${cypressArgs.join(' ')}`
   console.log(`Running: ${command}`)
   exec(command, (error, stdout, stderr) => {
     if (error) {

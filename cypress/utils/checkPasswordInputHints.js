@@ -6,16 +6,26 @@ import { faker } from '@faker-js/faker'
  * @param {string} passwordHintSelector - CSS selector for the password hint element
  * @returns {Cypress.Chainable<number>} Chainable number representing the character count from hint
  */
-export const handlePasswordInputHints = (passwordLenght, passwordInputSelector, passwordHintSelector) => {
+export const handlePasswordInputHints = (
+  passwordLenght,
+  passwordInputSelector,
+  passwordHintSelector,
+) => {
   // Generate a random alphanumeric password of specified length
-  const password = faker.internet.password({length: passwordLenght})
+  const password = faker.internet.password({ length: passwordLenght })
 
   // Type the generated password into the input field
   cy.get(passwordInputSelector).type(password)
 
   // Get the hint element and extract character count
-  return  cy.get(passwordInputSelector).parents().find(passwordHintSelector).contains('/').invoke('text').then((text) => {
-        const splitText  = text.split('/')[0]
-        return parseInt(splitText)
+  return cy
+    .get(passwordInputSelector)
+    .parents()
+    .find(passwordHintSelector)
+    .contains('/')
+    .invoke('text')
+    .then((text) => {
+      const splitText = text.split('/')[0]
+      return parseInt(splitText)
     })
 }
