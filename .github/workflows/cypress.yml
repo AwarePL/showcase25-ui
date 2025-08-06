@@ -56,13 +56,13 @@ jobs:
           restore-keys: |
             node-modules-
 
-      - name: Install project
+      - name: Install dependencies
         run: |
           yarn install --frozen-lockfile --no-fund
 
-      - name: Install Cypress binary
+      - name: Verify Cypress installation
         run: |
-          yarn add cypress
+          yarn cypress verify
 
       - name: Run Cypress with test file distribution
         run: |
