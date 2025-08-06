@@ -28,9 +28,9 @@ env:
 jobs:
   cypress-parallel:
     runs-on: ubuntu-latest
+    container: cypress/included:14.5.3
     strategy:
       matrix:
-        node-version: [22]
         container: [1, 2]
       fail-fast: false
 
@@ -38,67 +38,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
-
       - name: Create cypress.env.js from secret
         run: |
           echo "${{ secrets.ENV }}" > ./cypress.env.js
-
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            node-modules-
-
-      - name: Install dependencies
+      
+      - name: Install Project Dependencies 
         run: |
           yarn install --frozen-lockfile --no-fund
-
-      - name: Verify Cypress installation
-        run: |
-          yarn cypress verify
 
       - name: Run Cypress with test file distribution
         run: |
           echo "Running tests in parallel mode"
           
-          # Get list of all test files
           TEST_FILES=$(find ./cypress/tests -name "*.cy.js" -type f)
           TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
           
           echo "Found $TEST_COUNT test files"
           
-          # Calculate which tests this container should run
           CONTAINER_ID=${{ matrix.container }}
           TOTAL_CONTAINERS=2
           
-          # Distribute tests across containers
           TEST_INDEX=0
           RUN_TESTS=false
           for file in $TEST_FILES; do
             if [ $((TEST_INDEX % TOTAL_CONTAINERS)) -eq $((CONTAINER_ID - 1)) ]; then
               echo "Container $CONTAINER_ID running test: $file"
               RUN_TESTS=true
-              # Use the environment from workflow input
-              ENV_INPUT="${{ inputs.environment }}"
-              if [ "$ENV_INPUT" = "dev" ]; then
-                node cypressRunner.js --spec "$file"
-              elif [ "$ENV_INPUT" = "staging" ]; then
-                node cypressRunner.js --spec "$file"
-              elif [ "$ENV_INPUT" = "prod" ]; then
-                node cypressRunner.js --spec "$file"
-              fi
+              ENV_INPUT="${{ github.event.inputs.environment || 'dev' }}"
+              node cypressRunner.js --spec "$file" --env "$ENV_INPUT"
             fi
             TEST_INDEX=$((TEST_INDEX + 1))
           done
 
-          # Set flag to indicate if any tests were run
           if [ "$RUN_TESTS" = "true" ]; then
             echo "Tests were executed in this container"
           else
@@ -107,7 +78,7 @@ jobs:
 
       - name: Upload screenshots if they exist
         uses: actions/upload-artifact@v4
-        if: always() && (hashFiles('cypress/screenshots') != '')
+        if: always() && (hashFiles('cypress/screenshots/**') != '')
         with:
           name: cypress-screenshots-container-${{ matrix.container }}
           path: cypress/screenshots
@@ -115,7 +86,7 @@ jobs:
 
       - name: Upload videos if they exist
         uses: actions/upload-artifact@v4
-        if: always() && (hashFiles('cypress/videos') != '')
+        if: always() && (hashFiles('cypress/videos/**') != '')
         with:
           name: cypress-videos-container-${{ matrix.container }}
           path: cypress/videos
