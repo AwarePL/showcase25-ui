@@ -84,11 +84,11 @@ jobs:
               # Use the environment from workflow input
               ENV_INPUT="${{ inputs.environment }}"
               if [ "$ENV_INPUT" = "dev" ]; then
-                yarn node cypressRunner.js --spec "$file"
+                node cypressRunner.js --spec "$file"
               elif [ "$ENV_INPUT" = "staging" ]; then
-                yarn node cypressRunner.js --spec "$file"
+                node cypressRunner.js --spec "$file"
               elif [ "$ENV_INPUT" = "prod" ]; then
-                yarn node cypressRunner.js --spec "$file"
+                node cypressRunner.js --spec "$file"
               fi
             fi
             TEST_INDEX=$((TEST_INDEX + 1))
