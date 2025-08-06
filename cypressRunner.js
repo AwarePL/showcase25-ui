@@ -76,8 +76,8 @@ if (params.open) {
     console.error(stderr)
   })
 } else {
-  // For run mode, use yarn cypress run instead of npx to avoid issues with Cypress installation
-  const command = `yarn cypress run ${args.join(' ')}`
+  // For run mode, use the Cypress binary directly instead of yarn
+  const command = `npx cypress run ${args.join(' ')}`
   console.log(`Running: ${command}`)
   exec(command, (error, stdout, stderr) => {
     if (error) {
