@@ -60,6 +60,10 @@ jobs:
         run: |
           yarn install --frozen-lockfile --no-fund
 
+      - name: Install Cypress binary
+        run: |
+          yarn add cypress
+
       - name: Run Cypress with test file distribution
         run: |
           echo "Running tests in parallel mode"
