@@ -60,10 +60,6 @@ jobs:
         run: |
           yarn install --frozen-lockfile --no-fund
 
-      - name: Install Cypress binary
-        run: |
-          yarn add cypress
-
       - name: Run Cypress with test file distribution
         run: |
           echo "Running tests in parallel mode"
@@ -88,11 +84,11 @@ jobs:
               # Use the environment from workflow input
               ENV_INPUT="${{ inputs.environment }}"
               if [ "$ENV_INPUT" = "dev" ]; then
-                node cypressRunner.js --spec "$file"
+                yarn node cypressRunner.js --spec "$file"
               elif [ "$ENV_INPUT" = "staging" ]; then
-                node cypressRunner.js --spec "$file"
+                yarn node cypressRunner.js --spec "$file"
               elif [ "$ENV_INPUT" = "prod" ]; then
-                node cypressRunner.js --spec "$file"
+                yarn node cypressRunner.js --spec "$file"
               fi
             fi
             TEST_INDEX=$((TEST_INDEX + 1))
