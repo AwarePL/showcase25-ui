@@ -2,6 +2,7 @@
 import { RegistrationPage } from '../../pages/RegistrationPage'
 import { generateTestsForStaticElements } from '../../utils/checkStaticView'
 import { handlePasswordInputHints } from '../../utils/checkPasswordInputHints'
+import { checkPasswordStreanght } from '../../utils/checkPasswordStreanght'
 
 describe('Registration Page Smoke Tests', () => {
   const registerPage = new RegistrationPage()
@@ -52,6 +53,7 @@ describe('Registration Page Smoke Tests', () => {
         })
       })
     })
+      checkPasswordStreanght()
 
     //   context('Negative Tests', () => {
     //     // toDo
