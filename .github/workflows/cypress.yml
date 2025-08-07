@@ -23,12 +23,11 @@ permissions:
 env:
   CI: "true"
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
 jobs:
   cypress-parallel:
     runs-on: ubuntu-latest
-    
+    container: cypress/included:14.5.3
     strategy:
       matrix:
         container: [1, 2]
@@ -48,7 +47,6 @@ jobs:
 
       - name: Cache yarn dependencies
         uses: actions/cache@v4
-        id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -58,34 +56,11 @@ jobs:
       - name: Install Project Dependencies
         run: |
           yarn install --frozen-lockfile --no-fund
-
-      - name: Install Cypress
-        run: yarn add cypress
-
-      - name: Run Cypress with test file distribution
+      
+      - name: Run Cypress Tests in Parallel
         run: |
-          echo "Running tests in parallel mode"
-          TEST_FILES=$(find ./cypress/tests -name "*.cy.js" -type f)
-          TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
-          echo "Found $TEST_COUNT test files"
-          CONTAINER_ID=${{ matrix.container }}
-          TOTAL_CONTAINERS=2
-          TEST_INDEX=0
-          RUN_TESTS=false
-          for file in $TEST_FILES; do
-            if [ $((TEST_INDEX % TOTAL_CONTAINERS)) -eq $((CONTAINER_ID - 1)) ]; then
-              echo "Container $CONTAINER_ID running test: $file"
-              RUN_TESTS=true
-              ENV_INPUT="${{ github.event.inputs.environment || 'dev' }}"
-              node cypressRunner.js --spec "$file" --env "$ENV_INPUT"
-            fi
-            TEST_INDEX=$((TEST_INDEX + 1))
-          done
-          if [ "$RUN_TESTS" = "true" ]; then
-            echo "Tests were executed in this container"
-          else
-            echo "No tests executed in this container"
-          fi
+          ENV_INPUT="${{ github.event.inputs.environment || 'dev' }}"
+          node cypressRunner.js --env "$ENV_INPUT" --record --parallel --key ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Upload screenshots if they exist
         uses: actions/upload-artifact@v4
@@ -103,6 +78,11 @@ jobs:
           path: cypress/videos
           retention-days: 1
       
+      - name: Install Dependencies for Upload
+        run: |
+          apt-get update
+          apt-get install -y curl jq
+          
       - name: TestBeats Publish
         if: always()
         uses: test-results-reporter/publish@v1
