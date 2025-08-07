@@ -6,10 +6,12 @@
   "scripts": {
     "lint": "eslint . --ext .js,.cypress.js",
     "format": "prettier --write **/*.{js,cypress.js}",
-    "cypress:dev": "node cypressRunner.js",
-    "cypress:staging": "node cypressRunner.js",
-    "cypress:prod": "node cypressRunner.js",
-    "cypress:open": "node cypressRunner.js --open"
+    "cypress:run:dev": "node cypressRunner.js --env dev",
+    "cypress:run:staging": "node cypressRunner.js --env staging",
+    "cypress:run:prod": "node cypressRunner.js --env prod",
+    "cypress:open:dev": "node cypressRunner.js --env dev --open",
+    "cypress:open:staging": "node cypressRunner.js --env staging --open",
+    "cypress:open:prod": "node cypressRunner.js --env prod --open"
   },
   "repository": "https://github.com/AwarePL/showcase25-ui.git",
   "author": "AwarePL <lukasz@korchowiec.pl>",

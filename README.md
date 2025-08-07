@@ -6,17 +6,17 @@ This project is a frontend application with a robust end-to-end (E2E) testing se
 
 ## 🌟 Why This Setup?
 
-This structure balances **developer productivity** with **test robustness**, making it ideal for long-term maintenance and UX-driven testing. By separating concerns into **Page Objects** and **App Actions**, the project promotes **clean code**, **reusability**, and **scalability**. Avoid anti-patterns like hardcoded selectors and mixed logic, and instead embrace **POM**, **AAA**, and **fixtures** to build a test suite that is both powerful and easy to maintain.
+This structure balances **developer productivity** with **test robustness**, making it ideal for long-term maintenance and UX-driven testing. By separating concerns into **Page Objects** for UI interaction and **App Actions** for business logic, the project promotes **clean code**, **reusability**, and **scalability**. We embrace a hybrid approach, using **API calls for test setup** to increase speed and reliability, while leveraging **POM and the AAA pattern** for clear and maintainable UI tests.
 
 ---
 
 ## 📌 Key Features
 
-- **Environment Flexibility**: Supports `dev`, `staging`, and `prod` environments via `cypress.env.js` and scripts in `package.json` (`cypress:dev`, `cypress:staging`, `cypress:prod`).
-- **Parallel Execution**: Tests run in parallel using GitHub Actions with a matrix strategy (`containers: [1, 2]`) and Cypress's built-in parallelization.
-- **CI/CD Integration**: Fully automated testing via GitHub Actions workflow (`workflow_dispatch`) with support for headless and GUI test runs.
-- **Customizable Configuration**: Centralized settings in `config/base.config.js` (viewport size, retries, experimental features) and `cypress.env.js` (environment-specific variables).
-- **Test Artifacts**: Screenshots, videos, and logs are automatically generated and cleaned up using `trashAssetsAfterRuns: true` in `base.config.js`.
+- **Hybrid Testing Strategy**: Uses API calls (`cy.request`) for fast and reliable test setup (e.g., user creation) and UI automation for testing user-facing functionality.
+- **Environment Flexibility**: Supports `dev`, `staging`, and `prod` environments via `cypress.env.js` and scripts in `package.json`.
+- **CI/CD Integration**: Fully automated testing via GitHub Actions, with parallel execution to speed up test runs.
+- **Customizable Configuration**: Centralized settings in `config/base.config.js` and environment-specific variables in `cypress.env.js`.
+- **Test Artifacts**: Automatically generates screenshots and videos on failure, with automatic cleanup of old artifacts.
 
 ---
 
@@ -30,9 +30,9 @@ This structure balances **developer productivity** with **test robustness**, mak
 ├── cypress/                # Cypress test files and support
 │   ├── pages/              # Page Object classes (UI interactions)
 │   ├── steps/              # App Actions (business logic)
-│   ├── tests/              # Test cases (AAA pattern)
-│   ├── support/            # Cypress defaults
-│   └── fixtures/           # Test data (e.g., user credentials)
+│   ├── tests/              # Test cases (e2e and smoke)
+│   ├── support/            # Custom commands and Cypress defaults
+│   └── fixtures/           # Test data (static and generated)
 ├── config/                 # Cypress configuration files
 │   └── base.config.js      # Base configuration for Cypress
 ├── cypress.env.js          # Environment-specific variables
@@ -47,53 +47,38 @@ This structure balances **developer productivity** with **test robustness**, mak
 
 ### 1. **Architecture Overview**
 
-- **Page Object Model (POM)**: Encapsulates page-specific logic in reusable classes.  
-  Example: `cypress/pages/LoginPage.js` handles all interactions with the login form (e.g., typing credentials, clicking the login button).
+- **API-First for Setup**: For E2E tests, we prioritize creating preconditions (like users, products, etc.) through direct API calls using custom commands (e.g., `cy.registerUserViaApi`). This makes our tests faster, more stable, and independent of UI changes in setup flows.
 
-- **App Actions (Steps)**: Orchestrate user flows using pages (e.g., login, add to cart).  
-  Example: `cypress/steps/UserActions.js` uses `LoginPage` to perform a login and returns the page object for further assertions.
+- **Page Object Model (POM)**: Encapsulates page-specific UI logic in reusable classes. Example: `cypress/pages/LoginPage.js` handles all interactions with the login form itself.
 
-- **AAA Pattern (Arrange-Act-Assert)**: Ensures clear test logic by separating setup, execution, and verification.  
-  Example: A test for login might:
-  - **Arrange**: Navigate to the login page.
-  - **Act**: Input valid credentials and submit.
-  - **Assert**: Verify redirection to the dashboard and success message.
+- **App Actions (Steps)**: Orchestrates user flows by combining methods from page objects or custom commands. Example: `cypress/steps/UserActions.js` uses `LoginPage` to perform a login action.
+
+- **AAA Pattern (Arrange-Act-Assert)**: Ensures clear test logic by separating setup, execution, and verification.
+  - **Arrange**: Set up the application state, often via an API call (e.g., `cy.registerUserViaApi()`).
+  - **Act**: Perform the core UI interaction being tested (e.g., `UserActions.login()`).
+  - **Assert**: Verify the outcome in the UI (e.g., `cy.url().should('include', '/#/search')`).
 
 ---
 
 ### 2. **Sample Test Cases**
 
-#### ✅ **Login Flow**
-- **Arrange**: Navigate to the login page.
-- **Act**: Input valid credentials and submit.
-- **Assert**: Verify redirection to the dashboard and success message.
+#### ✅ **Login Flow (Smoke Test)**
+- **Arrange**: A new user is created instantly via a `POST` request using the `cy.registerUserViaApi()` custom command.
+- **Act**: The test navigates to the login page and submits the user's credentials using `UserActions.login()`.
+- **Assert**: Verify the API response is successful and the user is redirected to the dashboard.
 
-#### ✅ **Add to Cart**
-- **Arrange**: Login as a user.
-- **Act**: Browse to a product page, click "Add to Cart".
-- **Assert**: Verify cart icon updates and product appears in cart.
-
-#### ✅ **Checkout Process**
-- **Arrange**: Add multiple items to cart.
-- **Act**: Proceed to checkout, fill shipping info.
-- **Assert**: Confirm order summary and success page.
+#### ✅ **Registration Flow (E2E Test)**
+- **Arrange**: Navigate to the home page.
+- **Act**: The test clicks through the entire registration form, filling it out with dynamically generated data using `UserActions.register()`. It then logs in as that new user.
+- **Assert**: Verify that the user can be created and that the subsequent login is successful.
 
 ---
 
 ### 3. **CI/CD Integration**
 
 #### **GitHub Actions Workflow**
-- **File**: `.github/workflows/cypress.yml`  
-  This workflow runs Cypress tests on `workflow_dispatch` events. Key features:
-  - Uses **parallel execution** with a matrix strategy (`containers: [1, 2]`) for faster test runs.
-  - Runs on **Ubuntu** with the latest version (`ubuntu-latest`).
-  - Uses the official [Cypress GitHub Action](https://github.com/cypress-io/github-action) for test execution.
-  - Dynamically generates `cypress.env.js` from GitHub secrets (`secrets.ENV`).
-  - Records test results to **Cypress Cloud** using the `CYPRESS_RECORD_KEY` secret.
-  - Includes steps for:
-    - Checking out the repository.
-    - Installing project dependencies (`npm install`).
-    - Running tests with `node cypressRunner.js --env dev` (or other environments).
+- **File**: `.github/workflows/cypress.yml`
+- This workflow runs Cypress tests on `push`, `pull_request`, and `workflow_dispatch` events. It uses **parallel execution** with a matrix strategy to run tests faster and records the results to **Cypress Cloud**.
 
 ---
 
