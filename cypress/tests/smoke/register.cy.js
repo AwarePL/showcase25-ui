@@ -2,7 +2,7 @@
 import { RegistrationPage } from '../../pages/RegistrationPage'
 import { generateTestsForStaticElements } from '../../utils/checkStaticView'
 import { handlePasswordInputHints } from '../../utils/checkPasswordInputHints'
-import { checkPasswordStreanght } from '../../utils/checkPasswordStreanght'
+import { checkPasswordStrength } from '../../utils/checkPasswordStrength'
 
 describe('Registration Page Smoke Tests', () => {
   const registerPage = new RegistrationPage()
@@ -12,7 +12,7 @@ describe('Registration Page Smoke Tests', () => {
     registerPage.visit()
   })
 
-  context('Positive Tests', () => {
+  context('Static Elements', () => {
     const elementsToTest = [
       { name: 'Email input field', selector: registerPage.emailInput },
       { name: 'Password input field', selector: registerPage.passwordInput },
@@ -21,29 +21,31 @@ describe('Registration Page Smoke Tests', () => {
         selector: registerPage.repeatPasswordInput,
       },
       {
-        name: 'Select securinty question select',
+        name: 'Security question select',
         selector: registerPage.securityQuestionSelect,
       },
       {
-        name: 'Securinty question answer input field',
+        name: 'Security question answer input field',
         selector: registerPage.securityAnswerInput,
       },
-
       { name: 'Register button', selector: registerPage.registerButton },
       {
         name: 'Already a customer? link',
-        selector: registerPage.alreadyACustomerLinkAcorn,
+        selector: registerPage.alreadyACustomerLink,
       },
     ]
 
-    const passwordLengths = [5, 10]
     generateTestsForStaticElements(elementsToTest, 'Registration page')
-    it('Main heading should be Registration', () => {
+
+    it('should display "User Registration" as the main heading', () => {
       cy.get('h1').should('contain.text', 'User Registration')
     })
+  })
 
+  context('Password Hints', () => {
+    const passwordLengths = [5, 10]
     passwordLengths.forEach((length) => {
-      it(`Password hint should display ${length} characters`, () => {
+      it(`should display a hint with ${length} characters for the password`, () => {
         handlePasswordInputHints(
           length,
           registerPage.passwordInput,
@@ -53,10 +55,9 @@ describe('Registration Page Smoke Tests', () => {
         })
       })
     })
-      checkPasswordStreanght()
+  })
 
-    //   context('Negative Tests', () => {
-    //     // toDo
-    //   })
+  context('Password Strength', () => {
+    checkPasswordStrength()
   })
 })
