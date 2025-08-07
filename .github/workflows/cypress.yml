@@ -41,8 +41,21 @@ jobs:
       - name: Create cypress.env.js from secret
         run: |
           echo "${{ secrets.ENV }}" > ./cypress.env.js
+
+      # Cache node_modules to speed up dependency installation
+      - name: Cache dependencies
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       
+      # This step will now be much faster if the cache is restored
       - name: Install Project Dependencies 
+        # Only run yarn install if the cache wasn't restored
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: |
           yarn install --frozen-lockfile --no-fund
 
