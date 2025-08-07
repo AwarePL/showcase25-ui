@@ -1,5 +1,7 @@
 # Project Overview: End-to-End Testing with Cypress (Enhanced Structure)
 
+[![showcase](https://img.shields.io/endpoint?url=https://cloud.cypress.io/badge/count/5cqayn/main&style=for-the-badge&logo=cypress)](https://cloud.cypress.io/projects/5cqayn/runs)
+
 This project is a frontend application with a robust end-to-end (E2E) testing setup using [Cypress](https://www.cypress.io/). It supports running tests in multiple environments (development, staging, production) and provides flexibility to run tests in headless mode, parallel, or via the GUI. The project is structured to ensure **maintainability, scalability, and integration with CI/CD pipelines**, with a focus on **Page Object Model (POM)** and **App Actions** to promote clean, reusable, and DRY (Don't Repeat Yourself) test code.
 
 ---
@@ -79,6 +81,21 @@ This structure balances **developer productivity** with **test robustness**, mak
 #### **GitHub Actions Workflow**
 - **File**: `.github/workflows/cypress.yml`
 - This workflow runs Cypress tests on `push`, `pull_request`, and `workflow_dispatch` events. It uses **parallel execution** with a matrix strategy to run tests faster and records the results to **Cypress Cloud**.
+
+---
+
+## 📊 Test Analytics with TestBeats
+
+This project is integrated with [TestBeats](https://testbeats.com/) to provide analytics and historical data for our test runs. This helps us track test suite health, identify flaky tests, and monitor performance over time.
+
+### How It Works
+
+1.  **Report Generation**: After each test run, Cypress is configured to generate standardized report files in the JUnit XML format. These are stored in the `cypress/reports/junit/` directory.
+2.  **Configuration**: The `testbeats.config.js` file in the root of the project tells the uploader where to find these report files.
+3.  **CI/CD Upload**: In our GitHub Actions workflow (`.github/workflows/cypress.yml`), a dedicated step uses the official `test-results-reporter/publish@v1` action to send these reports to the TestBeats dashboard.
+4.  **Authentication**: The upload process is authenticated using a `TESTBEATS_API_KEY`, which is stored as a secure secret in the GitHub repository.
+
+You can view the detailed test run history and analytics by logging into our project's TestBeats dashboard.
 
 ---
 
