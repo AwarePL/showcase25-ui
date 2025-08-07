@@ -52,18 +52,12 @@ fs.writeFileSync(
   `export default ${JSON.stringify(config, null, 2)}`,
 )
 
-// ✅ POCZĄTEK ZMIAN: Filtrowanie argumentów
-// Kopiujemy oryginalne argumenty
+// Filter out the --env argument from the cypress arguments
 const cypressArgs = [...args]
-
-// Znajdujemy indeks flagi --env
 const envIndex = cypressArgs.findIndex((arg) => arg === '--env')
-
-// Jeśli flaga --env istnieje, usuwamy ją oraz jej wartość (następny element w tablicy)
 if (envIndex > -1) {
   cypressArgs.splice(envIndex, 2)
 }
-// ✅ KONIEC ZMIAN: Filtrowanie argumentów
 
 // Add --record flag if in CI and record key exists
 if (process.env.CI === 'true' && process.env.CYPRESS_RECORD_KEY) {
