@@ -1,14 +1,24 @@
-/* eslint-disable no-magic-numbers */
-/* eslint-disable no-console */
+/**
+ * @file cypressRunner.js
+ * @description A wrapper script for running Cypress tests with dynamic configurations.
+ * This script reads command-line arguments to select an environment (dev, staging, prod),
+ * dynamically generates the `cypress.config.js` file, and then executes Cypress.
+ * It also handles adding CI-specific flags when necessary.
+ *
+ * Usage examples:
+ * `node cypressRunner.js --env dev` - Runs tests on the dev environment.
+ * `node cypressRunner.js --env prod --open` - Opens the Cypress GUI for the prod environment.
+ */
+
 import fs from 'fs'
 import path from 'path'
 import { env } from './cypress.env.js'
 import generateConfig from './config/base.config.js'
 import { exec } from 'child_process'
 
+// --- 1. Parse Command-Line Arguments ---
 const args = process.argv.slice(2)
 const params = {}
-
 let i = 0
 while (i < args.length) {
   if (args[i].startsWith('--')) {
@@ -25,43 +35,40 @@ while (i < args.length) {
   }
 }
 
-// Set default environment if not specified
+// --- 2. Set Up Environment Configuration ---
+// Default to 'dev' environment if --env flag is not provided
 const envName = params.env || 'dev'
 
-// Validate environment
+// Validate that the chosen environment exists in our config file
 if (!env[envName]) {
   throw new Error(`Environment "${envName}" is not defined in cypress.env.js.`)
 }
 
-// Copy env, projectId and googleAccount to config
+// Combine the base config with the specific environment config
 const envConfig = {
   ...env[envName],
   projectId: env.projectId,
 }
 
-// Generate the config object
+// --- 3. Dynamically Generate cypress.config.js ---
 const config = generateConfig(envConfig)
-
-// Resolve the current directory using process.cwd()
 const dir = process.cwd()
-
-// Write the config to cypress.config.js
 const configFilePath = path.resolve(dir, 'cypress.config.js')
 fs.writeFileSync(
   configFilePath,
   `export default ${JSON.stringify(config, null, 2)}`,
 )
 
-// Filter out the --env argument from the cypress arguments
+// --- 4. Prepare Arguments for Cypress ---
+// Filter out our custom --env argument, as Cypress doesn't understand it
 const cypressArgs = [...args]
 const envIndex = cypressArgs.findIndex((arg) => arg === '--env')
 if (envIndex > -1) {
   cypressArgs.splice(envIndex, 2)
 }
 
-// Add --record flag if in CI and record key exists
+// Add the --record flag for Cypress Cloud if running in a CI environment
 if (process.env.CI === 'true' && process.env.CYPRESS_RECORD_KEY) {
-  // Only add record flags if not already present
   const hasRecord =
     cypressArgs.includes('--record') || cypressArgs.includes('-r')
   if (!hasRecord) {
@@ -70,7 +77,8 @@ if (process.env.CI === 'true' && process.env.CYPRESS_RECORD_KEY) {
   }
 }
 
-// Run or open Cypress based on the --open flag
+// --- 5. Execute Cypress ---
+// Run `cypress open` if --open flag is present, otherwise run `cypress run`
 if (params.open) {
   const openArgs = cypressArgs.filter((arg) => arg !== '--open')
   const command = `npx cypress open ${openArgs.join(' ')}`
@@ -84,7 +92,6 @@ if (params.open) {
     console.error(stderr)
   })
 } else {
-  // For run mode, use the Cypress binary directly instead of yarn
   const command = `npx cypress run ${cypressArgs.join(' ')}`
   console.log(`Running: ${command}`)
   exec(command, (error, stdout, stderr) => {

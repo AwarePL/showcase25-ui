@@ -2,8 +2,8 @@ import { RegistrationPage } from '../pages/RegistrationPage'
 import { faker } from '@faker-js/faker'
 
 /**
- * Checks the password strength based on different criteria.
- * @param {number} expectedStrength - The expected password strength value (0, 20, 40, 60, 80, or 100).
+ * A helper function that asserts the current value of the password strength progress bar.
+ * @param {number} expected - The expected strength value (e.g., 0, 20, 40, 60, 80, or 100).
  */
 const assertCurrentPasswordStrength = (expected) => {
   const registerPage = new RegistrationPage()
@@ -15,7 +15,8 @@ const assertCurrentPasswordStrength = (expected) => {
 }
 
 /**
- * Checks the password strength by typing different passwords and asserting the strength bar value.
+ * Generates a series of `it()` blocks to test the password strength meter.
+ * It types passwords with varying complexity and asserts that the progress bar updates correctly.
  */
 export const checkPasswordStrength = () => {
   const registerPage = new RegistrationPage()

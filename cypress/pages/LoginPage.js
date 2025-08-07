@@ -1,6 +1,7 @@
 /**
- * Represents the Login Page.
- * Contains all the elements and actions related to the login page.
+ * @class LoginPage
+ * @description Represents the Login Page of the application.
+ * It contains all the selectors and methods to interact with the login form.
  */
 export class LoginPage {
   constructor() {
@@ -18,16 +19,16 @@ export class LoginPage {
   }
 
   /**
-   * Visits the login page.
+   * Navigates directly to the login page.
    */
   visit() {
     cy.visit('/#/login')
   }
 
   /**
-   * Logs in a user with the given credentials.
-   * @param {string} username - The user's email.
-   * @param {string} password - The user's password.
+   * Fills the login form and submits it.
+   * @param {string} username - The user's email to type into the email field.
+   * @param {string} password - The user's password to type into the password field.
    * @returns {Cypress.Chainable<JQuery<HTMLElement>>}
    */
   login(username, password) {
@@ -37,22 +38,23 @@ export class LoginPage {
   }
 
   /**
-   * Starts the registration process via email.
+   * Clicks the link to navigate to the registration page.
    */
   startRegistrationViaEmail() {
     cy.get(this.registerLink).click()
   }
 
   /**
-   * Gets the error message element.
+   * Gets the main error message element displayed on login failure.
    * @returns {Cypress.Chainable<JQuery<HTMLElement>>}
    */
   getErrorMessage() {
     return cy.get(this.errorMessage)
   }
+
   /**
-   * Triggers and gets the form validation message.
-   * This method will trigger validation by typing and clearing the inputs.
+   * Triggers form validation messages by interacting with the input fields
+   * and then returns the validation message elements.
    * @returns {Cypress.Chainable<JQuery<HTMLElement>>}
    */
   getFormValidationMessage() {

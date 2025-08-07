@@ -1,6 +1,10 @@
 import { LoginPage } from '../../pages/LoginPage'
 import { generateTestsForStaticElements } from '../../utils/checkStaticView'
 
+/**
+ * @description Smoke test suite for the Login Page.
+ * It covers the visibility of static elements and essential login scenarios.
+ */
 describe('Login Page Smoke Tests', () => {
   const loginPage = new LoginPage()
 
@@ -10,6 +14,9 @@ describe('Login Page Smoke Tests', () => {
     cy.intercept('POST', '**/login').as('login')
   })
 
+  /**
+   * @description A context for tests that verify the visibility and presence of static UI elements on the page.
+   */
   context('Static Elements', () => {
     const elementsToTest = [
       { name: 'Email input field', selector: loginPage.emailInput },
@@ -34,7 +41,13 @@ describe('Login Page Smoke Tests', () => {
     })
   })
 
+  /**
+   * @description A context for tests that cover functional login scenarios, including positive and negative paths.
+   */
   context('Login Scenarios', () => {
+    /**
+     * @description Verifies that a user can successfully log in with valid credentials created via the API.
+     */
     it('should allow a user to log in with valid credentials', () => {
       cy.registerUserViaApi().then((user) => {
         loginPage.login(user.email, user.password)
@@ -43,6 +56,9 @@ describe('Login Page Smoke Tests', () => {
       })
     })
 
+    /**
+     * @description Ensures that an error message is displayed when a user tries to log in with incorrect credentials.
+     */
     it('should show an error message with invalid credentials', () => {
       loginPage.login('invalid@example.com', 'wrongpassword')
       cy.get(loginPage.errorMessage).should(
@@ -52,6 +68,9 @@ describe('Login Page Smoke Tests', () => {
       cy.wait('@login').its('response.statusCode').should('eq', 401)
     })
 
+    /**
+     * @description Checks that the login button is disabled by default when the input fields are empty.
+     */
     it('should disable the Login button for empty fields', () => {
       cy.get(loginPage.loginButton).should(
         'have.class',
@@ -59,6 +78,9 @@ describe('Login Page Smoke Tests', () => {
       )
     })
 
+    /**
+     * @description Verifies that form validation errors appear after a user interacts with and clears the input fields.
+     */
     it('should show validation errors for empty fields after interaction', () => {
       loginPage.getFormValidationMessage()
       cy.get(loginPage.emailInput).should('have.class', 'ng-invalid')

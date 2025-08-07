@@ -4,6 +4,10 @@ import { generateTestsForStaticElements } from '../../utils/checkStaticView'
 import { handlePasswordInputHints } from '../../utils/checkPasswordInputHints'
 import { checkPasswordStrength } from '../../utils/checkPasswordStrength'
 
+/**
+ * @description Smoke test suite for the Registration Page.
+ * It covers the visibility of static elements and the dynamic behavior of password-related UI features.
+ */
 describe('Registration Page Smoke Tests', () => {
   const registerPage = new RegistrationPage()
 
@@ -12,6 +16,9 @@ describe('Registration Page Smoke Tests', () => {
     registerPage.visit()
   })
 
+  /**
+   * @description A context for tests that verify the visibility and presence of static UI elements on the page.
+   */
   context('Static Elements', () => {
     const elementsToTest = [
       { name: 'Email input field', selector: registerPage.emailInput },
@@ -42,9 +49,15 @@ describe('Registration Page Smoke Tests', () => {
     })
   })
 
+  /**
+   * @description A context for tests that check the functionality of the password length hint.
+   */
   context('Password Hints', () => {
     const passwordLengths = [5, 10]
     passwordLengths.forEach((length) => {
+      /**
+       * @description Verifies that the password hint correctly reflects the number of characters typed.
+       */
       it(`should display a hint with ${length} characters for the password`, () => {
         handlePasswordInputHints(
           length,
@@ -57,6 +70,9 @@ describe('Registration Page Smoke Tests', () => {
     })
   })
 
+  /**
+   * @description A context for tests that verify the password strength progress bar.
+   */
   context('Password Strength', () => {
     checkPasswordStrength()
   })

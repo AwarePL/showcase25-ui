@@ -1,6 +1,7 @@
 /**
- * Represents the Registration Page.
- * Contains all the elements and actions related to the registration page.
+ * @class RegistrationPage
+ * @description Represents the User Registration Page.
+ * It contains all the selectors and methods needed to interact with the registration form.
  */
 export class RegistrationPage {
   constructor() {
@@ -18,15 +19,15 @@ export class RegistrationPage {
   }
 
   /**
-   * Visits the registration page.
+   * Navigates directly to the registration page.
    */
   visit() {
     cy.visit('/#/register')
   }
 
   /**
-   * Fills the email input.
-   * @param {string} email - The email to fill.
+   * Fills in the email input field.
+   * @param {string} email - The email to be typed into the field.
    * @returns {Cypress.Chainable<JQuery<HTMLElement>>}
    */
   fillEmail(email) {
@@ -34,8 +35,8 @@ export class RegistrationPage {
   }
 
   /**
-   * Fills the password input.
-   * @param {string} password - The password to fill.
+   * Fills in the password input field.
+   * @param {string} password - The password to be typed into the field.
    * @returns {Cypress.Chainable<JQuery<HTMLElement>>}
    */
   fillPassword(password) {
@@ -43,8 +44,8 @@ export class RegistrationPage {
   }
 
   /**
-   * Fills the repeat password input.
-   * @param {string} password - The password to fill.
+   * Fills in the repeat password input field.
+   * @param {string} password - The password to be typed into the field.
    * @returns {Cypress.Chainable<JQuery<HTMLElement>>}
    */
   fillRepeatPassword(password) {
@@ -52,8 +53,8 @@ export class RegistrationPage {
   }
 
   /**
-   * Selects a security question.
-   * @param {string} [option] - The security question option to select. Defaults to "Name of your favorite pet?".
+   * Selects a security question from the dropdown.
+   * @param {string} [option='Name of your favorite pet?'] - The text of the security question to select.
    * @returns {Cypress.Chainable<JQuery<HTMLElement>>}
    */
   selectSecurityQuestion(option) {
@@ -68,8 +69,8 @@ export class RegistrationPage {
   }
 
   /**
-   * Fills the security answer input.
-   * @param {string} answer - The answer to fill.
+   * Fills in the security answer input field.
+   * @param {string} answer - The answer to be typed into the field.
    * @returns {Cypress.Chainable<JQuery<HTMLElement>>}
    */
   fillAnswer(answer) {
@@ -77,7 +78,7 @@ export class RegistrationPage {
   }
 
   /**
-   * Submits the registration form.
+   * Clicks the register button to submit the form.
    * @returns {Cypress.Chainable<JQuery<HTMLElement>>}
    */
   submit() {
