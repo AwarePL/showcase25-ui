@@ -142,6 +142,6 @@ vite.config.ts.timestamp-*
 screenshots
 videos
 downloads
-reports
+cypress/reports/**
 cypress.config.js
 cypress/fixtures/generated/

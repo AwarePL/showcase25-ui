@@ -48,7 +48,7 @@ jobs:
 
       - name: Cache yarn dependencies
         uses: actions/cache@v4
-        id: yarn-cache 
+        id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -62,15 +62,11 @@ jobs:
       - name: Run Cypress with test file distribution
         run: |
           echo "Running tests in parallel mode"
-          
           TEST_FILES=$(find ./cypress/tests -name "*.cy.js" -type f)
           TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
-          
           echo "Found $TEST_COUNT test files"
-          
           CONTAINER_ID=${{ matrix.container }}
           TOTAL_CONTAINERS=2
-          
           TEST_INDEX=0
           RUN_TESTS=false
           for file in $TEST_FILES; do
@@ -82,7 +78,6 @@ jobs:
             fi
             TEST_INDEX=$((TEST_INDEX + 1))
           done
-
           if [ "$RUN_TESTS" = "true" ]; then
             echo "Tests were executed in this container"
           else
@@ -104,3 +99,18 @@ jobs:
           name: cypress-videos-container-${{ matrix.container }}
           path: cypress/videos
           retention-days: 1
+
+      - name: Upload results to TestBeats
+        if: always()
+        run: |
+          curl -sSLf https://raw.githubusercontent.com/kubeshop/testkube/main/install.sh | bash
+          REPORTS=$(find cypress/reports/junit -name "results-*.xml")
+          if [ -z "$REPORTS" ]; then
+            echo "No report files found to upload."
+          else
+            for report_file in $REPORTS; do
+              echo "Uploading report file: $report_file"
+              testkube run test --from-file "$report_file" \
+                --token "${{ secrets.TESTKUBE_API_TOKEN }}"
+            done
+          fi
