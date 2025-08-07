@@ -100,10 +100,10 @@ jobs:
           path: cypress/videos
           retention-days: 1
 
-      - name: Install curl
+      - name: Install Dependencies for Upload
         run: |
           apt-get update
-          apt-get install -y curl
+          apt-get install -y curl jq
 
       - name: Upload results to TestBeats
         if: always()
