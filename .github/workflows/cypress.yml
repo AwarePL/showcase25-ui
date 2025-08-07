@@ -59,6 +59,9 @@ jobs:
         run: |
           yarn install --frozen-lockfile --no-fund
 
+      - name: Install Cypress
+        run: yarn add cypress
+
       - name: Run Cypress with test file distribution
         run: |
           echo "Running tests in parallel mode"
@@ -100,9 +103,9 @@ jobs:
           path: cypress/videos
           retention-days: 1
       
-      - name: Upload results to TestBeats
+      - name: TestBeats Publish
         if: always()
-        uses: kubeshop/testkube-github-reporter-action@v1
+        uses: test-results-reporter/publish@v1
         with:
-          api-token: ${{ secrets.TESTKUBE_API_TOKEN }}
-          report-paths: 'cypress/reports/junit/*.xml'
+          junit: 'cypress/reports/junit/*.xml'
+          api-key: ${{ secrets.TESTBEATS_API_KEY }}
