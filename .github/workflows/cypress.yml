@@ -60,7 +60,7 @@ jobs:
       - name: Run Cypress Tests in Parallel
         run: |
           ENV_INPUT="${{ github.event.inputs.environment || 'dev' }}"
-          node cypressRunner.js --env "$ENV_INPUT" --record --parallel --key ${{ secrets.CYPRESS_RECORD_KEY }}
+          node cypressRunner.js --env "$ENV_INPUT" --record --parallel --key ${{ secrets.CYPRESS_RECORD_KEY }} --ci-build-id ${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload screenshots if they exist
         uses: actions/upload-artifact@v4
